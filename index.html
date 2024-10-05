@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FLAME Matchmaker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Roboto:wght@700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.3s ease;
+        }
+        body {
+            background: linear-gradient(135deg, #ff66b2 30%, #ffccff 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            animation: fadeIn 2s ease-out;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px;
+            padding: 25px;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            position: relative;
+            transform: scale(1);
+            animation: popIn 0.6s ease-out;
+            transition: transform 0.4s, box-shadow 0.4s;
+        }
+        .container:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+        }
+        h1, h2 {
+            color: #ff66b2;
+            animation: slideIn 1s ease-in-out;
+        }
+        h1 {
+            font-size: 36px;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+        h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            letter-spacing: 0.5px;
+        }
+        p {
+            color: #333;
+            font-size: 18px;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        button {
+            background-color: #ff66b2;
+            color: #fff;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            margin: 5px;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+        button:hover {
+            background-color: #ff3399;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+        }
+        .back-button {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: none;
+            border: none;
+            color: #ff3399;
+            font-size: 24px;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+        .back-button:hover {
+            color: #e6007a;
+        }
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #ff66b2;
+            font-weight: bold;
+        }
+        input[type="text"], input[type="date"], select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ffb3d9;
+            border-radius: 10px;
+            font-size: 16px;
+            background-color: #fff0f5;
+            margin-top: 5px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        input[type="text"]:focus, input[type="date"]:focus, select:focus, textarea:focus {
+            border-color: #ff66b2;
+            background-color: #ffebf7;
+            box-shadow: 0 0 8px rgba(255, 102, 178, 0.5);
+        }
+        textarea {
+            resize: none;
+            min-height: 60px;
+        }
+        #matchResult {
+            font-size: 16px;
+            line-height: 1.5;
+            text-align: left;
+            color: #333;
+            animation: fadeIn 1.5s ease-in;
+        }
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .result-table th, .result-table td {
+            padding: 10px;
+            border: 1px solid #ffb3d9;
+            text-align: left;
+            background: rgba(255, 236, 240, 0.5);
+        }
+        .result-table th {
+            background-color: #ff66b2;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .result-table td {
+            background-color: #fff;
+            color: #555;
+        }
+
+        /* Confetti Rain Effect */
+        .confetti {
+            position: fixed;
+            top: -10px;
+            width: 10px;
+            height: 10px;
+            background-color: #ff0066; /* Darker pink */
+            opacity: 0.9;
+            z-index: 999;
+            animation: fall linear infinite;
+        }
+
+        @keyframes fall {
+            0% {
+                opacity: 1;
+                transform: translateY(0) rotate(0deg);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(100vh) rotate(720deg);
+            }
+        }
+
+        @keyframes fadeIn {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            0% { transform: translateY(-20px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Slide 1: Title Slide -->
+    <div class="container" id="slide1">
+        <h1>FLAME MATCHMAKER</h1>
+        <h2>Find Your Study Mate</h2>
+        <button onclick="showNextSlide(2)">Continue</button>
+    </div>
+
+    <!-- Slide 2: Welcome & Options -->
+    <div class="container" id="slide2" style="display: none;">
+        <h2>Welcome to FLAME Matchmaker</h2>
+        <p><strong>Matchmaker</strong><br> Your Next Best Friend (or Study Partner) is Just a Click Away!<br> Ever wondered if your perfect study buddy or best friend is sitting right next to you in class?<br> With FLAME Matchmaker, find out who you’re destined to vibe with based on your goals, interests, and birthdate!</p>
+        <button onclick="showNextSlide(3)">Find Your Match</button>
+        <button onclick="showNextSlide(5)">Know the Team</button>
+        <button class="back-button" onclick="showNextSlide(1)">←</button>
+    </div>
+
+    <!-- Slide 3: Match Form -->
+    <div class="container" id="slide3" style="display: none;">
+        <h2>Find Your Perfect Match!</h2>
+        <form id="matchForm">
+            <div class="form-group">
+                <label for="name">Enter your Name:</label>
+                <input type="text" id="name" name="name" placeholder="Your Name" required>
+            </div>
+            <div class="form-group">
+                <label for="courses">Enter your courses:</label>
+                <textarea id="courses" name="courses" rows="2" placeholder="Enter your courses separated by commas..." required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="universe">Favorite Universe of Knowledge:</label>
+                <select id="universe" name="universe" required>
+                    <option value="social science">Social Science</option>
+                    <option value="humanities">Humanities</option>
+                    <option value="arts">Arts</option>
+                    <option value="science">Science</option>
+                    <option value="global studies">Global Studies</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="birthday">Select your birthday:</label>
+                <input type="date" id="birthday" name="birthday" required>
+            </div>
+            <div class="form-group">
+                <label for="study-method">Preferred Way of Studying:</label>
+                <select id="study-method" name="study-method" required>
+                    <option value="notes">Making Notes</option>
+                    <option value="reading">Reading</option>
+                    <option value="videos">Watching Videos</option>
+                    <option value="audios">Listening to Audios</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="fav-place">Favorite Place to Study at FLAME:</label>
+                <select id="fav-place" name="fav-place" required>
+                    <option value="room">In my room</option>
+                    <option value="library">Library</option>
+                    <option value="focus room">Focus Room</option>
+                    <option value="hashtag">#Hashtag</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="goal">Life Goal:</label>
+                <input type="text" id="goal" name="goal" placeholder="Enter your life goal..." required>
+            </div>
+            <div class="form-group">
+                <label for="hobbies">Hobbies:</label>
+                <textarea id="hobbies" name="hobbies" rows="2" placeholder="Enter your hobbies..." required></textarea>
+            </div>
+            <button type="submit">Find My Match!</button>
+        </form>
+        <button class="back-button" onclick="showNextSlide(2)">←</button>
+    </div>
+
+    <!-- Slide 4: Display Match Result -->
+    <div class="container" id="slide4" style="display: none;">
+        <h2>Your Study Soulmate Is...</h2>
+        <table class="result-table" id="matchResult">
+            <!-- Result will be displayed here -->
+        </table>
+        <button onclick="showNextSlide(3)">Find Another Match</button>
+        <button class="back-button" onclick="showNextSlide(2)">←</button>
+    </div>
+
+    <!-- Slide 5: Meet the Team -->
+    <div class="container" id="slide5" style="display: none;">
+        <h2>Meet the Team</h2>
+        <div class="team-member">Jayitha Reddy</div>
+        <div class="team-member">Riya Nag</div>
+        <div class="team-member">Siya Raheja</div>
+        <div class="team-member">Nitant Singh</div>
+        <div class="team-member">Vidhika Baid</div>
+        <button onclick="showNextSlide(2)">Back</button>
+    </div>
+
+    <script>
+        const candidates = [
+            {name: "Jayitha Reddy", courses: ["intro to finc and acc", "comms theory"], universe: "social science", birthday: "2006-02-25", studyMethod: "notes", favPlace: "focus room", hobbies: "sleep", goal: "get paid to sleep"},
+            {name: "Shanaika ratreja", courses: ["Public policy"], universe: "social science", birthday: "2006-03-30", studyMethod: "notes", favPlace: "room", hobbies: "Dancing, singing, writing, cooking", goal: "To be rich and successful"},
+            {name: "Kanushka Jain", courses: ["Entrepreneurship", "Spanish"], universe: "social science", birthday: "2005-10-24", studyMethod: "notes", favPlace: "room", hobbies: "Sleep and listen to music and eat", goal: "To be successful and to be happy"},
+            {name: "niharika", courses: ["self and society"], universe: "humanities", birthday: "2006-08-04", studyMethod: "video", favPlace: "room", hobbies: "crying in bed", goal: "no specific goals as such"},
+            {name: "Mahira Khurana", courses: ["Academic writing", "principle of economics"], universe: "social science", birthday: "2005-11-03", studyMethod: "video", favPlace: "room", hobbies: "Running", goal: "To become rich"},
+            {name: "Shrinithi Nandhakumar", courses: ["Philosophy", "academic writing"], universe: "humanities", birthday: "2006-11-23", studyMethod: "reading", favPlace: "library", hobbies: "Taking care of dogs, dancing, journaling, art", goal: "To live a life of acceptance, love and do something for the disadvantaged"},
+            {name: "Aanya", courses: ["Intro to literature", "precalculus"], universe: "social science", birthday: "2006-07-18", studyMethod: "notes", favPlace: "room", hobbies: "singing ig", goal: "To become a therapist"},
+            {name: "siya", courses: ["digi lit", "french 101"], universe: "humanities", birthday: "2005-12-12", studyMethod: "video", favPlace: "focus room", hobbies: "playing w dogs", goal: "to be happy at work"},
+            {name: "Hanica Shivaprasad", courses: ["Intro To Cultural Studies", "Academic Writing"], universe: "humanities", birthday: "2006-02-10", studyMethod: "reading", favPlace: "library", hobbies: "Writing, Reading , Dancing", goal: "To research on topics in psychology and cultural studies and write towards making a difference"},
+            {name: "anusha", courses: ["advertising", "psychology"], universe: "humanities", birthday: "2006-03-09", studyMethod: "notes", favPlace: "room", hobbies: "listening to music", goal: "make money"},
+            {name: "Shyam", courses: ["Principles of management", "Spanish"], universe: "global studies", birthday: "2006-02-20", studyMethod: "notes", favPlace: "library", hobbies: "Dance", goal: "Dance"},
+            {name: "Yug", courses: ["Thinking like an economist", "artificial intelligence for beginners"], universe: "social science", birthday: "2005-12-30", studyMethod: "reading", favPlace: "library", hobbies: "Sports", goal: "Be rich"},
+            {name: "Khushi Malhotra", courses: ["Introduction to contemporary dance", "Introduction to applied ethics", "Fields of psychology"], universe: "humanities", birthday: "2006-03-07", studyMethod: "video", favPlace: "library", hobbies: "Dance, Theatre, Playing the piano, Reading", goal: "To be successful in the field of psychology"},
+            {name: "shristi", courses: ["acad writing", "psychology"], universe: "arts", birthday: "2005-10-14", studyMethod: "notes", favPlace: "library", hobbies: "drawing", goal: "rich"},
+            {name: "Gauri Walawalkar", courses: ["Psych101", "Grmn101"], universe: "social science", birthday: "2006-05-25", studyMethod: "video", favPlace: "library", hobbies: "Painting, cycling", goal: "To be successful in whatever I aspire"},
+            {name: "Ria Raje", courses: ["Principles of management", "Critical Reasoning"], universe: "social science", birthday: "2006-09-30", studyMethod: "video", favPlace: "library", hobbies: "Reading books, online comics, stories etc., listening to music, watching shows online etc.", goal: "Be well-off, but have a happy and safe life, with all the people I love ❤️"},
+            {name: "Vidhika Baid", courses: ["principle of economics", "chemistry"], universe: "science", birthday: "2006-04-04", studyMethod: "audio", favPlace: "hashtag", hobbies: "eating", goal: "successful"},
+            {name: "Muskaan Patel", courses: ["Film Appreciation", "French"], universe: "social science", birthday: "2006-04-10", studyMethod: "notes", favPlace: "room", hobbies: "watching shows", goal: "fail"},
+            {name: "Sai Belsare", courses: ["Ethics", "Sociology"], universe: "social science", birthday: "2005-07-16", studyMethod: "reading", favPlace: "room", hobbies: "Music, Reading novels, Watching cable TV", goal: "Buying a car"},
+            {name: "Aditya Singh Bala", courses: ["GMGT", "ENT"], universe: "social science", birthday: "2006-03-30", studyMethod: "video", favPlace: "library", hobbies: "Sports", goal: "To take my family business forward"},
+            {name: "Ananya Phadke", courses: ["intro to finc and acc", "comms theory"], universe: "science", birthday: "2006-04-10", studyMethod: "video", favPlace: "library", hobbies: "Drawing", goal: "get paid to sleep"},
+        {name: "Nandini Bhinde", courses: ["Public policy"], universe: "social science", birthday: "2006-05-11", studyMethod: "notes", favPlace: "room", hobbies: "Watching shows", goal: "To be rich and successful"},
+        {name: "Shivani Yadav", courses: ["Entrepreneurship", "Spanish"], universe: "social science", birthday: "2006-06-12", studyMethod: "reading", favPlace: "focus room", hobbies: "Sports", goal: "To be successful and to be happy"},
+        {name: "Shruti Elantholy", courses: ["self and society"], universe: "social science", birthday: "2006-08-13", studyMethod: "audio", favPlace: "library", hobbies: "Crying in bed", goal: "no specific goals as such"},
+        {name: "Prachi Pawar", courses: ["Academic writing", "principle of economics"], universe: "humanities", birthday: "2006-09-14", studyMethod: "notes", favPlace: "room", hobbies: "Listening to music", goal: "To become rich"},
+        {name: "Shahina Ali", courses: ["Philosophy", "academic writing"], universe: "social science", birthday: "2006-10-15", studyMethod: "video", favPlace: "hashtag", hobbies: "Painting, cycling", goal: "To live a life of acceptance, love and do something for the disadvantaged"},
+        {name: "Shishira Vittal", courses: ["Intro to literature", "precalculus"], universe: "humanities", birthday: "2006-11-16", studyMethod: "notes", favPlace: "library", hobbies: "Writing, Reading, Dancing", goal: "To become a therapist"},
+        {name: "Kavyadeep Bhatia", courses: ["digi lit", "french 101"], universe: "social science", birthday: "2006-01-17", studyMethod: "reading", favPlace: "room", hobbies: "Guitar", goal: "to be happy at work"},
+        {name: "Shabari Shetty", courses: ["Intro To Cultural Studies", "Academic Writing"], universe: "humanities", birthday: "2006-02-18", studyMethod: "notes", favPlace: "room", hobbies: "Sleep and listen to music and eat", goal: "To research on topics in psychology and cultural studies and write towards making a difference"},
+        {name: "Manasvi Shah", courses: ["advertising", "psychology"], universe: "humanities", birthday: "2006-03-19", studyMethod: "video", favPlace: "library", hobbies: "Running", goal: "make money"},
+        {name: "Senorita Sethy", courses: ["Principles of management", "Spanish"], universe: "humanities", birthday: "2006-04-20", studyMethod: "notes", favPlace: "room", hobbies: "Music, Reading novels, Watching cable TV", goal: "Dance"},
+        {name: "Prerna Agrawal", courses: ["Thinking like an economist", "artificial intelligence for beginners"], universe: "global studies", birthday: "2006-05-21", studyMethod: "video", favPlace: "library", hobbies: "Dance", goal: "Be rich"},
+        {name: "Shruti Laddha", courses: ["Introduction to contemporary dance", "Introduction to applied ethics", "Fields of psychology"], universe: "social science", birthday: "2006-06-22", studyMethod: "notes", favPlace: "room", hobbies: "Dancing, singing, writing, cooking", goal: "To be successful in the field of psychology"},
+        {name: "Shreya Thorat", courses: ["acad writing", "psychology"], universe: "humanities", birthday: "2006-07-23", studyMethod: "video", favPlace: "library", hobbies: "Taking care of dogs, dancing, journaling, art", goal: "rich"},
+        {name: "Premrupa Adapanawar", courses: ["Psych101", "Grmn101"], universe: "global studies", birthday: "2006-08-24", studyMethod: "reading", favPlace: "library", hobbies: "Playing w dogs", goal: "To be successful in whatever I aspire"},
+        {name: "Khushi Doshi", courses: ["Principles of management", "Critical Reasoning"], universe: "social science", birthday: "2006-09-25", studyMethod: "notes", favPlace: "focus room", hobbies: "Reading books, online comics, listening to music", goal: "Be well-off, but have a happy and safe life, with all the people I love ❤️"},
+        {name: "Yashvi Chheda", courses: ["principle of economics", "chemistry"], universe: "humanities", birthday: "2006-10-26", studyMethod: "notes", favPlace: "room", hobbies: "Dance, Theatre, Playing the piano, Reading", goal: "successful"},
+        {name: "Gurleen Kaur", courses: ["Film Appreciation", "French"], universe: "arts", birthday: "2006-11-27", studyMethod: "video", favPlace: "library", hobbies: "Eating", goal: "fail"},
+        {name: "Meghna Venkatesh", courses: ["Ethics", "Sociology"], universe: "social science", birthday: "2006-12-28", studyMethod: "notes", favPlace: "room", hobbies: "Sports", goal: "Buying a car"},
+        {name: "Mansi Surana", courses: ["GMGT", "ENT"], universe: "social science", birthday: "2006-11-29", studyMethod: "reading", favPlace: "library", hobbies: "Drawing", goal: "To take my family business forward"},
+        {name: "Alisha Prusty", courses: ["Principles of Management", "Intro to Operations Research"], universe: "global studies", birthday: "2006-07-18", studyMethod: "video", favPlace: "library", hobbies: "Watching shows", goal: "To start a business of my own"},
+        {name: "Sasitha R", courses: ["self and society"], universe: "social science", birthday: "2005-12-12", studyMethod: "notes", favPlace: "room", hobbies: "Sports", goal: "get paid to sleep"},
+        {name: "Achsah Steffi John", courses: ["Academic writing", "principle of economics"], universe: "humanities", birthday: "2006-01-02", studyMethod: "video", favPlace: "focus room", hobbies: "Crying in bed", goal: "To be rich and successful"},
+        {name: "Melria Gomes", courses: ["Philosophy", "academic writing"], universe: "arts", birthday: "2006-02-10", studyMethod: "video", favPlace: "library", hobbies: "Listening to music", goal: "To be successful and to be happy"},
+        {name: "Stuti Chowbey", courses: ["Intro to literature", "precalculus"], universe: "social science", birthday: "2006-03-25", studyMethod: "notes", favPlace: "room", hobbies: "Painting, cycling", goal: "no specific goals as such"},
+        {name: "Avani Tejasvi", courses: ["digi lit", "french 101"], universe: "social science", birthday: "2006-05-04", studyMethod: "reading", favPlace: "hashtag", hobbies: "Writing, Reading, Dancing", goal: "To become rich"},
+        {name: "Ahaana Ahuja", courses: ["Philosophy", "academic writing"], universe: "arts", birthday: "2006-05-24", studyMethod: "reading", favPlace: "library", hobbies: "Sports", goal: "successful"},
+{name: "Pratishtha Agarwal", courses: ["Intro to literature", "precalculus"], universe: "social science", birthday: "2006-06-09", studyMethod: "notes", favPlace: "your room", hobbies: "Drawing", goal: "fail"},
+{name: "Rishika Jain", courses: ["digi lit", "french 101"], universe: "science", birthday: "2006-07-14", studyMethod: "notes", favPlace: "library", hobbies: "Watching shows", goal: "Buying a car"},
+{name: "Taneeshaa Mehtani", courses: ["Intro To Cultural Studies", "Academic Writing"], universe: "science", birthday: "2006-08-01", studyMethod: "video", favPlace: "library", hobbies: "Sports", goal: "To take my family business forward"},
+{name: "Raashi Sharma", courses: ["advertising", "psychology"], universe: "humanities", birthday: "2006-09-03", studyMethod: "notes", favPlace: "your room", hobbies: "Crying in bed", goal: "To start a business of my own"},
+{name: "Hiya Rakholia", courses: ["Principles of management", "Spanish"], universe: "arts", birthday: "2006-10-07", studyMethod: "reading", favPlace: "focus room", hobbies: "Listening to music", goal: "get paid to sleep"},
+{name: "Niti Desai", courses: ["Thinking like an economist", "artificial intelligence for beginners"], universe: "social science", birthday: "2006-11-19", studyMethod: "video", favPlace: "library", hobbies: "Painting, cycling", goal: "To be rich and successful"},
+{name: "Aashvi Sanghvi", courses: ["Introduction to contemporary dance", "Introduction to applied ethics", "Fields of psychology"], universe: "science", birthday: "2006-12-26", studyMethod: "notes", favPlace: "your room", hobbies: "Writing, Reading, Dancing", goal: "To be successful and to be happy"},
+{name: "Manya Agarwal", courses: ["acad writing", "psychology"], universe: "humanities", birthday: "2006-01-30", studyMethod: "video", favPlace: "hashtag", hobbies: "Guitar, piano, music, writing", goal: "no specific goals as such"},
+{name: "Vadanya Kaul", courses: ["Psych101", "Grmn101"], universe: "arts", birthday: "2006-02-21", studyMethod: "video", favPlace: "library", hobbies: "Sleep and listen to music", goal: "To become rich"},
+{name: "Vinati Manchanda", courses: ["Principles of management", "Critical Reasoning"], universe: "social science", birthday: "2006-03-05", studyMethod: "notes", favPlace: "your room", hobbies: "Running", goal: "To live a life of acceptance, love and do something for the disadvantaged"},
+{name: "Harshita Dogra", courses: ["principle of economics", "chemistry"], universe: "science", birthday: "2006-04-18", studyMethod: "reading", favPlace: "your room", hobbies: "Music, Reading novels, Watching cable TV", goal: "To become a therapist"},
+{name: "Riya Keswani", courses: ["Philosophy", "academic writing"], universe: "humanities", birthday: "2006-05-27", studyMethod: "audio", favPlace: "library", hobbies: "Dance", goal: "to be happy at work"},
+{name: "Sara Patel", courses: ["Intro to literature", "precalculus"], universe: "arts", birthday: "2006-06-15", studyMethod: "notes", favPlace: "your room", hobbies: "Dancing, singing, writing", goal: "To research on topics in psychology and cultural studies and write towards making a difference"},
+{name: "Yashika Seth", courses: ["digi lit", "french 101"], universe: "social science", birthday: "2006-08-12", studyMethod: "video", favPlace: "library", hobbies: "Taking care of dogs, dancing, journaling", goal: "make money"},
+{name: "Aishani Chawla", courses: ["Intro To Cultural Studies", "Academic Writing"], universe: "science", birthday: "2006-10-21", studyMethod: "notes", favPlace: "your room", hobbies: "Playing with dogs", goal: "Dance"},
+{name: "Anoushka Goyal", courses: ["advertising", "psychology"], universe: "science", birthday: "2006-10-22", studyMethod: "reading", favPlace: "library", hobbies: "Reading books, online comics, stories", goal: "Be rich"},
+{name: "Divyanka Garg", courses: ["Principles of management", "Spanish"], universe: "social science", birthday: "2006-11-04", studyMethod: "notes", favPlace: "library", hobbies: "Dance, Theatre, Playing the piano", goal: "To be successful in the field of psychology"},
+{name: "Dhanakshi Sharma", courses: ["Thinking like an economist", "artificial intelligence for beginners"], universe: "social science", birthday: "2006-12-14", studyMethod: "video", favPlace: "focus room", hobbies: "Eating", goal: "rich"},
+{name: "Khanak Soni", courses: ["Introduction to contemporary dance", "Introduction to applied ethics", "Fields of psychology"], universe: "humanities", birthday: "2006-02-08", studyMethod: "notes", favPlace: "your room", hobbies: "Sports", goal: "To be successful in whatever I aspire"},
+{name: "Eva George", courses: ["acad writing", "psychology"], universe: "social science", birthday: "2006-03-09", studyMethod: "video", favPlace: "library", hobbies: "Drawing", goal: "Be well-off, but have a happy and safe life, with all the people I love ❤️"},
+{name: "Anoushka Srivastava", courses: ["Psych101", "Grmn101"], universe: "humanities", birthday: "2006-04-16", studyMethod: "notes", favPlace: "your room", hobbies: "Watching shows", goal: "successful"},
+{name: "Siyona Gupta", courses: ["Principles of management", "Critical Reasoning"], universe: "social science", birthday: "2006-05-26", studyMethod: "video", favPlace: "library", hobbies: "Sports", goal: "fail"},
+{name: "Danvy S", courses: ["principle of economics", "chemistry"], universe: "humanities", birthday: "2006-06-29", studyMethod: "reading", favPlace: "library", hobbies: "Crying in bed", goal: "Buying a car"},
+{name: "Srishti Sudharsan", courses: ["Film Appreciation", "French"], universe: "humanities", birthday: "2006-07-11", studyMethod: "notes", favPlace: "your room", hobbies: "Listening to music", goal: "To take my family business forward"},
+{name: "Neha Kesarla", courses: ["Ethics", "Sociology"], universe: "humanities", birthday: "2006-08-30", studyMethod: "notes", favPlace: "focus room", hobbies: "Painting, cycling", goal: "To start a business of my own"},
+{name: "Navya Jain", courses: ["GMGT", "ENT"], universe: "global studies", birthday: "2006-09-02", studyMethod: "video", favPlace: "library", hobbies: "Writing, Reading, Dancing", goal: "get paid to sleep"},
+{name: "Tanvi Gopikrishnan", courses: ["Principles of Management", "Intro to Operations Research"], universe: "social science", birthday: "2006-10-05", studyMethod: "notes", favPlace: "your room", hobbies: "Guitar, piano, writing", goal: "To be rich and successful"},
+{name: "Sarayu Pavuluri", courses: ["intro to finc and acc", "comms theory"], universe: "humanities", birthday: "2006-11-21", studyMethod: "reading", favPlace: "hashtag", hobbies: "Sleep and listen to music", goal: "To be successful and to be happy"},
+{name: "Adya Shigehalli", courses: ["Public policy"], universe: "arts", birthday: "2006-12-12", studyMethod: "video", favPlace: "library", hobbies: "Running", goal: "no specific goals as such"},
+{name: "Mia Chopra", courses: ["Entrepreneurship", "Spanish"], universe: "social science", birthday: "2006-02-10", studyMethod: "notes", favPlace: "your room", hobbies: "Music, Reading novels, Watching cable TV", goal: "To become rich"},
+{name: "Vidhika Baid", courses: ["self and society"], universe: "social science", birthday: "2006-03-09", studyMethod: "video", favPlace: "your room", hobbies: "Dance", goal: "To live a life of acceptance, love and do something for the disadvantaged"},
+{name: "Aadya Arora", courses: ["Academic writing", "principle of economics"], universe: "social science", birthday: "2006-02-20", studyMethod: "video", favPlace: "library", hobbies: "Dancing, singing, writing, cooking", goal: "To become a therapist"},
+{name: "Saurav Singh", courses: ["Philosophy", "academic writing"], universe: "humanities", birthday: "2006-12-30", studyMethod: "notes", favPlace: "your room", hobbies: "Taking care of dogs, dancing, journaling", goal: "to be happy at work"},
+{name: "Varun Jaiswal", courses: ["Intro to literature", "precalculus"], universe: "social science", birthday: "2006-03-07", studyMethod: "reading", favPlace: "library", hobbies: "Playing with dogs", goal: "To research on topics in psychology and cultural studies and write towards making a difference"},
+{name: "Prem Tungar", courses: ["digi lit", "french 101"], universe: "humanities", birthday: "2006-10-14", studyMethod: "audio", favPlace: "your room", hobbies: "Reading books, online comics, stories", goal: "make money"},
+{name: "Krishnakant Vyas", courses: ["Intro To Cultural Studies", "Academic Writing"], universe: "social science", birthday: "2006-05-25", studyMethod: "notes", favPlace: "library", hobbies: "Dance, Theatre, Playing the piano", goal: "Dance"},
+{name: "Shrihari Suratran", courses: ["advertising", "psychology"], universe: "humanities", birthday: "2006-09-30", studyMethod: "video", favPlace: "library", hobbies: "Eating", goal: "Be rich"},
+{name: "Siddh Shah", courses: ["Principles of management", "Spanish"], universe: "humanities", birthday: "2006-04-04", studyMethod: "notes", favPlace: "focus room", hobbies: "Sports", goal: "To be successful in the field of psychology"},
+{name: "George Leopaul", courses: ["Thinking like an economist", "artificial intelligence for beginners"], universe: "humanities", birthday: "2006-04-10", studyMethod: "reading", favPlace: "your room", hobbies: "Drawing", goal: "rich"},
+{name: "Pranav Wankhede", courses: ["Introduction to contemporary dance", "Introduction to applied ethics", "Fields of psychology"], universe: "global studies", birthday: "2006-07-16", studyMethod: "notes", favPlace: "library", hobbies: "Watching shows", goal: "To be successful in whatever I aspire"},
+{name: "Aryan Mitra", courses: ["acad writing", "psychology"], universe: "social science", birthday: "2006-03-30", studyMethod: "video", favPlace: "your room", hobbies: "Sports", goal: "Be well-off, but have a happy and safe life, with all the people I love ❤️"},
+{name: "Hersh Shah", courses: ["Philosophy", "academic writing"], universe: "humanities", birthday: "2006-04-09", studyMethod: "notes", favPlace: "library", hobbies: "Crying in bed", goal: "successful"},
+{name: "Chirag Gupta", courses: ["Intro to literature", "precalculus"], universe: "humanities", birthday: "2006-04-10", studyMethod: "video", favPlace: "library", hobbies: "Listening to music", goal: "fail"},
+{name: "Aryan Goyal", courses: ["digi lit", "french 101"], universe: "global studies", birthday: "2006-05-11", studyMethod: "notes", favPlace: "your room", hobbies: "Painting, cycling", goal: "Buying a car"},
+{name: "Shriyans Chaudhari", courses: ["Intro To Cultural Studies", "Academic Writing"], universe: "social science", birthday: "2006-06-12", studyMethod: "video", favPlace: "focus room", hobbies: "Writing, Reading, Dancing", goal: "To take my family business forward"},
+{name: "Devansh Dalal", courses: ["advertising", "psychology"], universe: "humanities", birthday: "2006-08-13", studyMethod: "reading", favPlace: "library", hobbies: "Guitar, piano, music, literature, writing", goal: "To start a business of my own"},
+{name: "Rajat Jain", courses: ["Principles of management", "Spanish"], universe: "arts", birthday: "2006-09-14", studyMethod: "notes", favPlace: "your room", hobbies: "Sleep and listen to music", goal: "get paid to sleep"},
+{name: "Arshdeep Sehgal", courses: ["Thinking like an economist", "artificial intelligence for beginners"], universe: "social science", birthday: "2006-07-18", studyMethod: "notes", favPlace: "hashtag", hobbies: "Running", goal: "To be rich and successful"},
+{name: "Rishabh Gupta", courses: ["Introduction to contemporary dance", "Introduction to applied ethics", "Fields of psychology"], universe: "science", birthday: "2006-12-12", studyMethod: "video", favPlace: "library", hobbies: "Music, Reading novels, Watching cable TV", goal: "To be successful and to be happy"},
+{name: "Raghav Goyal", courses: ["acad writing", "psychology"], universe: "social science", birthday: "2006-01-01", studyMethod: "notes", favPlace: "your room", hobbies: "Dance", goal: "no specific goals as such"},
+{name: "Shardul Wani", courses: ["Psych101", "Grmn101"], universe: "humanities", birthday: "2006-02-05", studyMethod: "reading", favPlace: "your room", hobbies: "Dancing, singing, writing", goal: "To become rich"},
+{name: "Atharva Purohit", courses: ["Principles of management", "Critical Reasoning"], universe: "arts", birthday: "2006-04-03", studyMethod: "video", favPlace: "library", hobbies: "Taking care of dogs, dancing, journaling", goal: "To live a life of acceptance, love and do something for the disadvantaged"},
+{name: "Palash Gughane", courses: ["principle of economics", "chemistry"], universe: "social science", birthday: "2006-06-15", studyMethod: "notes", favPlace: "your room", hobbies: "Playing with dogs", goal: "To become a therapist"},
+{name: "Arjan Dev Bhalla", courses: ["Film Appreciation", "French"], universe: "science", birthday: "2006-08-28", studyMethod: "video", favPlace: "library", hobbies: "Reading books, online comics, stories", goal: "to be happy at work"},
+{name: "Arnav Srinath", courses: ["Ethics", "Sociology"], universe: "global studies", birthday: "2006-09-21", studyMethod: "video", favPlace: "your room", hobbies: "Dance, Theatre, Playing the piano", goal: "To research on topics in psychology and cultural studies and write towards making a difference"},
+{name: "Pavankumar Mudaliar", courses: ["GMGT", "ENT"], universe: "social science", birthday: "2006-10-11", studyMethod: "notes", favPlace: "library", hobbies: "Eating", goal: "make money"},
+{name: "Guru Sandeep Mygapula", courses: ["Principles of Management", "Intro to Operations Research"], universe: "science", birthday: "2006-11-22", studyMethod: "reading", favPlace: "library", hobbies: "Sports", goal: "Dance"},
+{name: "Ibrahim Shelukindo", courses: ["intro to finc and acc", "comms theory"], universe: "humanities", birthday: "2006-12-26", studyMethod: "audio", favPlace: "focus room", hobbies: "Drawing", goal: "Be rich"},
+{name: "Aditya Beria", courses: ["Public policy"], universe: "global studies", birthday: "2006-01-29", studyMethod: "notes", favPlace: "your room", hobbies: "Watching shows", goal: "To be successful in the field of psychology"},
+{name: "Ahan Jain", courses: ["Entrepreneurship", "Spanish"], universe: "social science", birthday: "2006-02-17", studyMethod: "video", favPlace: "library", hobbies: "Sports", goal: "rich"},
+{name: "Saksham Jain", courses: ["self and society"], universe: "science", birthday: "2006-03-24", studyMethod: "notes", favPlace: "your room", hobbies: "Crying in bed", goal: "To be successful in whatever I aspire"},
+{name: "Aaditya Gupta", courses: ["Academic writing", "principle of economics"], universe: "humanities", birthday: "2006-05-08", studyMethod: "reading", favPlace: "library", hobbies: "Listening to music", goal: "Be well-off, but have a happy and safe life, with all the people I love ❤️"}
+        ];
+
+        function createConfetti() {
+            for (let i = 0; i < 200; i++) {
+                const confetti = document.createElement('div');
+                confetti.classList.add('confetti');
+                confetti.style.left = `${Math.random() * 100}vw`; 
+                confetti.style.animationDuration = `${Math.random() * 3 + 5}s`; 
+                confetti.style.width = `${Math.random() * 10 + 5}px`; 
+                confetti.style.height = confetti.style.width;
+                document.body.appendChild(confetti);
+
+                setTimeout(() => {
+                    confetti.remove();
+                }, 8000); 
+            }
+        }
+
+        function showNextSlide(slideNumber) {
+            document.querySelectorAll('.container').forEach(slide => {
+                slide.style.display = 'none';
+            });
+            document.getElementById('slide' + slideNumber).style.display = 'block';
+        }
+
+        document.getElementById('matchForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            const userName = document.getElementById('name').value.trim().toLowerCase();
+            const userCourses = document.getElementById('courses').value.split(',').map(course => course.trim().toLowerCase());
+            const userUniverse = document.getElementById('universe').value.toLowerCase();
+            const userStudyMethod = document.getElementById('study-method').value.toLowerCase();
+            const userFavPlace = document.getElementById('fav-place').value.toLowerCase();
+            const userGoal = document.getElementById('goal').value.toLowerCase();
+            const userHobbies = document.getElementById('hobbies').value.toLowerCase();
+
+            let bestMatch = null;
+            let highestMatchScore = 0;
+
+            candidates.forEach(candidate => {
+                let matchScore = 0;
+
+                if (candidate.name.toLowerCase() === userName) {
+                    return;
+                }
+
+                candidate.courses.forEach(candidateCourse => {
+                    if (userCourses.includes(candidateCourse.toLowerCase())) {
+                        matchScore += 1;
+                    }
+                });
+
+                if (candidate.universe === userUniverse) matchScore += 1;
+                if (candidate.studyMethod === userStudyMethod) matchScore += 1;
+                if (candidate.favPlace === userFavPlace) matchScore += 1;
+                if (candidate.goal === userGoal) matchScore += 1;
+                if (candidate.hobbies === userHobbies) matchScore += 1;
+
+                if (matchScore > highestMatchScore) {
+                    highestMatchScore = matchScore;
+                    bestMatch = candidate;
+                }
+            });
+
+            if (bestMatch) {
+                const tableContent = `
+                    <tr><th>Name</th><td>${bestMatch.name}</td></tr>
+                    <tr><th>Favourite Courses</th><td>${bestMatch.courses.join(", ")}</td></tr>
+                    <tr><th>Universe of Knowledge</th><td>${bestMatch.universe}</td></tr>
+                    <tr><th>Birthday</th><td>${bestMatch.birthday}</td></tr>
+                    <tr><th>Preferred Study Method</th><td>${bestMatch.studyMethod}</td></tr>
+                    <tr><th>Preferred Study Place</th><td>${bestMatch.favPlace}</td></tr>
+                    <tr><th>Hobbies</th><td>${bestMatch.hobbies}</td></tr>
+                    <tr><th>Life Goal</th><td>${bestMatch.goal}</td></tr>`;
+                document.getElementById('matchResult').innerHTML = tableContent;
+
+                createConfetti(); 
+            } else {
+                document.getElementById('matchResult').innerHTML = "<tr><td colspan='2'>No match found, try adjusting your preferences!</td></tr>";
+            }
+
+            document.getElementById('matchForm').reset(); // Reset form after match found
+            showNextSlide(4);
+        });
+
+        showNextSlide(1);
+    </script>
+</body>
+</html>
